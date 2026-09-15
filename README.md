@@ -1,21 +1,29 @@
-# Windows Troubleshooting Lab
+# 🖥️ Windows Troubleshooting Lab
 
-A hands-on IT support lab focused on diagnosing and resolving common Windows issues.
+> A hands-on IT support lab focused on diagnosing, troubleshooting, and resolving common Windows issues.
+
+This project documents practical Windows administration and troubleshooting exercises using **PowerShell, Windows administrative tools, and virtual machines**.
+
+The goal is to build real-world troubleshooting skills that apply to **IT Support, Help Desk, Systems Administration, Networking, and Cybersecurity**.
+
+---
 
 ## 🎯 Objectives
 
-This lab documents practical Windows troubleshooting exercises covering:
+This lab covers:
 
-* User and account management
-* File and folder permissions
-* Windows services
-* Event Viewer
-* Network troubleshooting
-* DNS troubleshooting
-* Windows Firewall
-* PowerShell troubleshooting
+* 👤 User & account management
+* 🔐 File and folder permissions
+* ⚙️ Windows services
+* 🔎 Event Viewer & log analysis
+* 🌐 Network troubleshooting
+* 🧭 DNS troubleshooting
+* 🛡️ Windows Firewall
+* ⚡ PowerShell troubleshooting
 
-## 💻 Environment
+---
+
+## 🖥️ Environment
 
 * Windows 11
 * PowerShell
@@ -23,39 +31,69 @@ This lab documents practical Windows troubleshooting exercises covering:
 * Windows administrative tools
 * Virtual machines
 
+---
+
 ## 🛠️ Skills Practiced
 
-* Troubleshooting methodology
-* Windows administration
-* User and account management
+### 🖥️ Windows Administration
+
+* Local user and account management
 * Permissions and access control
-* System and application log analysis
-* Network configuration and troubleshooting
+* Windows services
+* System administration fundamentals
+* Event Viewer and log analysis
+
+### 🌐 Networking
+
+* IP configuration
+* Connectivity troubleshooting
 * DNS troubleshooting
-* Firewall configuration
-* PowerShell-based diagnostics
+* Network diagnostics
+* Common Windows networking commands
 
-## 📂 Labs
+### ⚡ PowerShell
 
-| Lab                                                         | Description                                                     |
-| ----------------------------------------------------------- | --------------------------------------------------------------- |
-| [User Account Management](user-account-management.md)       | Creating, managing, and troubleshooting Windows user accounts   |
-| [Permissions](permissions.md)                               | Managing NTFS permissions and troubleshooting access issues     |
-| [Services](services.md)                                     | Managing Windows services and diagnosing service issues         |
-| [Event Viewer](event-viewer.md)                             | Using Windows logs to investigate system and application events |
-| [Network Troubleshooting](network-troubleshooting.md)       | Diagnosing IP configuration and connectivity issues             |
-| [DNS Troubleshooting](dns-troubleshooting.md)               | Diagnosing DNS and hostname resolution issues                   |
-| [Windows Firewall](windows-firewall.md)                     | Troubleshooting Windows Firewall and network connectivity       |
-| [PowerShell Troubleshooting](powershell-troubleshooting.md) | Using PowerShell to diagnose Windows systems                    |
+* System information gathering
+* Account administration
+* Network diagnostics
+* Troubleshooting commands
+* Administrative automation fundamentals
 
-## 📈 Learning Approach
+---
 
-Each lab documents:
+## 🧪 Labs
 
-1. **Scenario** - The problem being investigated
-2. **Environment** - The system and tools used
-3. **Investigation** - Troubleshooting steps and commands
-4. **Resolution** - The solution or outcome
-5. **What I Learned** - Key technical takeaways
+| Lab                                                           | What I'm Practicing                                                       |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| 👤 [User Account Management](user-account-management.md)      | Creating, managing, verifying, and troubleshooting local Windows accounts |
+| 🔐 [Permissions](permissions.md)                              | Managing NTFS permissions and troubleshooting access issues               |
+| ⚙️ [Services](services.md)                                    | Managing Windows services and diagnosing service issues                   |
+| 🔎 [Event Viewer](event-viewer.md)                            | Investigating system and application events                               |
+| 🌐 [Network Troubleshooting](network-troubleshooting.md)      | Diagnosing IP configuration and connectivity problems                     |
+| 🧭 [DNS Troubleshooting](dns-troubleshooting.md)              | Investigating hostname and DNS resolution issues                          |
+| 🛡️ [Windows Firewall](windows-firewall.md)                   | Troubleshooting firewall rules and network connectivity                   |
+| ⚡ [PowerShell Troubleshooting](powershell-troubleshooting.md) | Using PowerShell for Windows diagnostics                                  |
 
-This lab is part of my progression from **IT Support → Systems & Networking → Cybersecurity**.
+---
+
+## 🔎 Troubleshooting Methodology
+
+Each lab follows a practical troubleshooting process:
+
+**01 · Identify**
+Understand the reported problem and establish the symptoms.
+
+**02 · Investigate**
+Gather information using Windows tools, commands, and logs.
+
+**03 · Isolate**
+Narrow down the likely cause of the issue.
+
+**04 · Resolve**
+Apply an appropriate fix or configuration change.
+
+**05 · Verify**
+Confirm that the issue has been resolved.
+
+**06 · Document**
+Reco
