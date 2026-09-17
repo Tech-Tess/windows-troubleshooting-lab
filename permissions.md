@@ -1,72 +1,70 @@
-# 🔐 Windows NTFS Permissions
+# 🔐 Windows NTFS Permissions Troubleshooting
 
-> A hands-on Windows administration lab focused on configuring, troubleshooting, and verifying NTFS file and folder permissions using PowerShell and `icacls`.
+> A hands-on Windows administration lab focused on investigating NTFS permissions, reproducing access-denied conditions, applying least-privilege access, and verifying the resulting ACLs.
 
 ## 🎯 Objective
 
-Practice investigating and modifying NTFS permissions, testing access with a standard user, troubleshooting access-denied errors, and verifying permission changes.
+Practice investigating and modifying Windows NTFS permissions using PowerShell and `icacls`, while understanding how permissions affect a standard user.
 
 ## 🖥️ Environment
 
 * Windows 11 25H2
 * PowerShell
-* NTFS file system
 * VMware virtual machine
+* NTFS file system
 * Administrator account: `Ginger`
 * Test account: `HelpDeskTest`
 
 ## 🧩 Scenario
 
-A restricted folder was created to simulate a Help Desk permission issue.
+A restricted folder was created to simulate a user reporting that they could not access a required resource.
 
-The `HelpDeskTest` account initially had no access to the folder. Permissions were then reviewed and modified by an administrator to provide the required level of access without granting unnecessary Full Control.
+The `HelpDeskTest` account was unable to access the restricted folder. The permissions were investigated, the existing ACL was reviewed, Modify access was granted by an administrator, and access was verified.
 
 ## 🔎 Investigation & Procedure
 
-### 01 · Create a Restricted Test Folder
+### 01 · Create a Restricted Folder
 
-Created a dedicated folder for permission testing.
+Created a dedicated lab folder:
 
 ```powershell
 New-Item -Path "C:\SecureLab" -ItemType Directory
 ```
 
-### 02 · Remove Inherited Permissions
-
-Disabled permission inheritance so the folder could be configured with a controlled ACL.
+Inheritance was removed:
 
 ```powershell
 icacls "C:\SecureLab" /inheritance:r
 ```
 
-### 03 · Configure Administrator and SYSTEM Access
-
-Granted Full Control to the local Administrators group and SYSTEM.
+Full Control was granted to the required administrative principals:
 
 ```powershell
-icacls "C:\SecureLab" /grant:r "Administrators:(OI)(CI)(F)" "SYSTEM:(OI)(CI)(F)"
+icacls "C:\SecureLab" /grant:r `
+    "Administrators:(OI)(CI)(F)" `
+    "SYSTEM:(OI)(CI)(F)"
 ```
 
-Verified the resulting permissions:
+Verified the ACL:
 
 ```powershell
 icacls "C:\SecureLab"
 ```
 
-The folder contained permissions for:
+The resulting ACL contained Full Control for:
 
-* `SYSTEM` → Full Control
-* `Administrators` → Full Control
+* `BUILTIN\Administrators`
+* `NT AUTHORITY\SYSTEM`
 
-### 04 · Test Access as a Standard User
+### 02 · Test Access as the Standard User
 
-Opened a PowerShell session as `HelpDeskTest`.
+A PowerShell session was launched as `HelpDeskTest`:
 
 ```powershell
 runas /user:HelpDeskTest "powershell.exe"
 ```
 
-Verified the account:
+The account was verified:
 
 ```powershell
 whoami
@@ -78,39 +76,35 @@ The result confirmed:
 windows11vm\helpdesktest
 ```
 
-Attempted to create a file inside the restricted folder:
+The user then attempted to create a file:
 
 ```powershell
 New-Item "C:\SecureLab\TestFile.txt"
 ```
 
-The operation returned **Access Denied**, confirming that the standard user did not currently have permission to modify the folder.
+The operation returned **Access is denied**.
 
-### 05 · Verify the ACL as Administrator
+This reproduced the permission problem in a controlled environment.
 
-Returned to an elevated Administrator PowerShell session and reviewed the folder permissions.
+### 03 · Investigate the ACL
+
+The administrator account reviewed the folder permissions:
 
 ```powershell
 icacls "C:\SecureLab"
 ```
 
-The ACL confirmed that only `SYSTEM` and `Administrators` had access at this stage.
+The ACL did not contain an entry granting `HelpDeskTest` access.
 
-### 06 · Grant the Required Permission
+### 04 · Apply Least-Privilege Access
 
-Granted `HelpDeskTest` Modify access instead of Full Control.
+Rather than granting Full Control, Modify access was assigned to the test account:
 
 ```powershell
 icacls "C:\SecureLab" /grant "HelpDeskTest:(OI)(CI)(M)"
 ```
 
-Where:
-
-* `(OI)` = Object Inherit
-* `(CI)` = Container Inherit
-* `(M)` = Modify
-
-Verified the updated ACL:
+The ACL was verified:
 
 ```powershell
 icacls "C:\SecureLab"
@@ -124,73 +118,86 @@ NT AUTHORITY\SYSTEM:(OI)(CI)(F)
 BUILTIN\Administrators:(OI)(CI)(F)
 ```
 
-### 07 · Verify Standard User Access
+`(M)` represents Modify permission.
 
-Returned to the `HelpDeskTest` PowerShell session and created a file successfully.
+`(OI)(CI)` specifies that the permission is inherited by files and subfolders within the folder.
+
+### 05 · Verify File Access
+
+The `HelpDeskTest` account successfully created and accessed a file:
 
 ```powershell
 New-Item "C:\SecureLab\HelpDeskTest.txt"
 ```
 
-Verified the contents of the folder:
+The folder contents were verified:
 
 ```powershell
 Get-ChildItem "C:\SecureLab"
 ```
 
-The successful file creation confirmed that the required Modify permission was working.
+The test user was also able to modify an existing file:
 
-### 08 · Test Permission Boundaries
+```powershell
+Add-Content "C:\SecureLab\TestFile.txt" "Help Desk permission test"
+```
 
-Attempted to grant Full Control to `HelpDeskTest` from the standard-user session:
+The file contents were verified:
+
+```powershell
+Get-Content "C:\SecureLab\TestFile.txt"
+```
+
+### 06 · Test Permission Boundaries
+
+The standard user attempted to grant itself Full Control:
 
 ```powershell
 icacls "C:\SecureLab" /grant "HelpDeskTest:(F)"
 ```
 
-The operation returned:
+The operation returned **Access is denied**.
 
-```text
-Access is denied.
-```
+This demonstrated that the standard user could use the permissions granted to it without being able to independently elevate its own access.
 
-This demonstrated that the standard user could modify files within the folder but could not modify the folder's permissions.
+### 07 · Verify Permission Inheritance
 
-### 09 · Verify File Inheritance
-
-Reviewed the permissions inherited by a file inside the folder.
+The permissions inherited by a file were reviewed:
 
 ```powershell
 (Get-Acl "C:\SecureLab\TestFile.txt").Access |
 Format-Table IdentityReference,FileSystemRights,AccessControlType,IsInherited
 ```
 
-The output confirmed that `HelpDeskTest` inherited Modify permissions from the parent folder.
+The results showed inherited permissions for the folder's configured principals.
 
-### 10 · Test File Modification
+## 🧠 Findings
 
-Verified that the standard user could modify an existing file.
+The troubleshooting workflow demonstrated:
 
-```powershell
-Add-Content "C:\SecureLab\TestFile.txt" "Help Desk permission test"
-Get-Content "C:\SecureLab\TestFile.txt"
-```
+1. Reproduce an Access Denied condition.
+2. Identify the affected user.
+3. Inspect the NTFS ACL.
+4. Determine which permissions were missing.
+5. Apply the minimum required access.
+6. Verify successful file access.
+7. Test that the user could not grant itself additional privileges.
 
-The file contents confirmed that the modification was successful.
+The final configuration gave `HelpDeskTest` Modify access while retaining Full Control for SYSTEM and Administrators.
 
-## 💡 Troubleshooting Considerations
+## 🛠️ Troubleshooting Considerations
 
-Common NTFS permission issues include:
+When troubleshooting Windows access problems, investigate:
 
-* Access Denied errors
-* Incorrect user permissions
+* NTFS permissions
 * Inherited permissions
-* Missing Modify or Write permissions
-* Excessive permissions
-* Users attempting administrative actions without elevation
-* Permissions applied to the wrong folder or file
+* Explicit permissions
+* User and group membership
+* Ownership
+* Share permissions when network shares are involved
+* Whether the user is actually using the expected account
 
-Useful commands for investigating NTFS permissions include:
+Useful commands include:
 
 ```powershell
 Get-Acl "C:\SecureLab"
@@ -201,38 +208,34 @@ icacls "C:\SecureLab"
 ```
 
 ```powershell
-(Get-Acl "C:\SecureLab\TestFile.txt").Access
+whoami
 ```
 
 ## 🔐 Security Notes
 
-* Follow the principle of least privilege.
-* Grant users only the permissions required for their role.
-* Avoid granting Full Control when Modify access is sufficient.
-* Use dedicated test folders when experimenting with permissions.
-* Avoid changing permissions on Windows system directories during testing.
-* Administrative permission changes should be performed from an elevated session.
-* Never publish passwords or other credentials in a repository.
+* Least privilege was used instead of granting unnecessary Full Control.
+* Testing was performed on a dedicated lab folder.
+* Broad system directories were not modified.
+* Administrative access was used only for permission-management tasks.
+* NTFS permissions should be reviewed carefully before changing production resources.
 
 ## 📸 Evidence
 
-Screenshots from the lab document:
+Recommended evidence:
 
-* Standard user receiving **Access Denied**
-* Administrator ACL showing `HelpDeskTest` with Modify access
-* Successful file creation and modification
-* Permission inheritance verification
+1. `Access is denied` when `HelpDeskTest` initially attempted to access the restricted folder.
+2. Administrator ACL showing `HelpDeskTest` with Modify access.
+3. Successful file creation/modification by `HelpDeskTest`.
+4. Optional permission-inheritance verification.
 
-> No passwords or credentials should be included in screenshots committed to the repository.
+Screenshots should not contain passwords or unnecessary personal information.
 
 ## 📝 What I Learned
 
-* How to investigate NTFS permissions using PowerShell
-* How to use `icacls` to configure folder permissions
-* How inheritance affects NTFS permissions
-* How to troubleshoot Access Denied errors
-* How to test permissions using a standard user account
-* How to grant Modify access without granting Full Control
-* How to verify inherited permissions
-* Why administrative changes should be performed from an elevated session
-* How the principle of least privilege applies to Windows file permissions
+* How Windows NTFS permissions are represented.
+* How to inspect ACLs using `Get-Acl` and `icacls`.
+* How inherited permissions affect files and folders.
+* How to reproduce and investigate Access Denied errors.
+* How to apply Modify permissions using `icacls`.
+* Why least privilege is preferable to unnecessary Full Control.
+* How to verify that a permission change actually solved the access problem.
