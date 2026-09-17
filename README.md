@@ -64,15 +64,15 @@ This lab covers:
 ## 🧪 Labs
 
 | Lab                                                           | What I'm Practicing                                                       |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| 👤 [User Account Management](user-account-management.md)        | Creating, managing, verifying, and troubleshooting local Windows accounts |
-| 🔐 [Permissions](permissions.md)                                | Managing NTFS permissions and troubleshooting access issues               |
-| ⚙️ [Services](services.md)                                      | Managing Windows services and diagnosing service issues                   |
-| 🔎 [Event Viewer](event-viewer.md)                              | Investigating system and application events                               |
-| 🌐 [Network Troubleshooting](network-troubleshooting.md)        | Diagnosing IP configuration and connectivity problems                     |
-| 🧭 [DNS Troubleshooting](dns-troubleshooting.md)                | Investigating hostname and DNS resolution issues                          |
-| 🛡️ [Windows Firewall](windows-firewall.md)                      | Troubleshooting firewall rules and network connectivity                   |
-| ⚡ [PowerShell Troubleshooting](powershell-troubleshooting.md)  | Using PowerShell for Windows diagnostics                                  |
+| -------------------------------------------------------------      | ------------------------------------------------------------------------- |
+| 👤 [User Account Management](user-account-management.md)          | Creating, managing, verifying, and troubleshooting local Windows accounts |
+| 🔐 [Permissions](permissions.md)                                  | Managing NTFS permissions and troubleshooting access issues               |
+| ⚙️ [Services](services.md)                                        | Managing Windows services and diagnosing service issues                   |
+| 🔎 [Event Viewer](event-viewer.md)                                | Investigating system and application events                               |
+| 🌐 [Network Troubleshooting](network-troubleshooting.md)          | Diagnosing IP configuration and connectivity problems                     |
+| 🧭 [DNS Troubleshooting](dns-troubleshooting.md)                  | Investigating hostname and DNS resolution issues                          |
+| 🛡️ [Windows Firewall](windows-firewall.md)                        | Troubleshooting firewall rules and network connectivity                   |
+| ⚡ [PowerShell Troubleshooting](powershell-troubleshooting.md)    | Using PowerShell for Windows diagnostics                                  |
 
 ---
 
