@@ -1,10 +1,10 @@
 # 🛡️ Windows Firewall Troubleshooting
 
-> A hands-on Windows administration lab focused on investigating Windows Firewall profiles and rules, testing network access, and verifying firewall configuration using PowerShell.
+> A hands-on Windows administration lab focused on investigating Windows Defender Firewall configuration, testing network access, analyzing firewall rules, and verifying remediation using PowerShell.
 
 ## 🎯 Objective
 
-Practice reviewing Windows Firewall configuration, investigating firewall rules, testing network connectivity, and understanding how firewall settings can affect Windows network communication.
+Practice reviewing Windows Firewall configuration, testing network connectivity, creating and investigating a controlled firewall rule, identifying its effect on network traffic, removing the rule, and verifying successful recovery.
 
 ## 🖥️ Environment
 
@@ -12,12 +12,17 @@ Practice reviewing Windows Firewall configuration, investigating firewall rules,
 * PowerShell
 * Windows Defender Firewall
 * VMware virtual machine
+* Administrator PowerShell session
 
 ## 🧩 Scenario
 
-A Windows workstation is experiencing a network connectivity issue. Windows Defender Firewall is investigated to determine whether firewall configuration or rules could be affecting network communication.
+A controlled firewall fault was introduced to simulate a connectivity issue.
 
-The firewall configuration is reviewed, relevant rules are examined, and connectivity is tested to verify the results.
+Baseline firewall configuration and TCP connectivity were established first. A narrowly scoped outbound firewall rule was then created to block TCP traffic to a specific remote IP address on port 443.
+
+Connectivity was tested during the fault, the firewall rule was investigated, the rule was removed, and connectivity was verified again.
+
+> This was a controlled lab exercise and not a production incident.
 
 ## 🔎 Investigation & Procedure
 
@@ -30,129 +35,68 @@ Get-NetFirewallProfile |
 Select-Object Name,Enabled,DefaultInboundAction,DefaultOutboundAction
 ```
 
-The profiles reviewed included:
+All three firewall profiles were enabled:
 
-* Domain
-* Private
-* Public
+* Domain: Enabled
+* Private: Enabled
+* Public: Enabled
 
-### 02 · Review Firewall Rules
+The default inbound and outbound actions were reported as `NotConfigured`.
 
-Displayed enabled firewall rules.
+📸 **Evidence:** `screenshots/firewall-profile-baseline.png`
 
-```powershell
-Get-NetFirewallRule -Enabled True |
-Select-Object DisplayName,Direction,Action,Profile |
-Format-Table -AutoSize
-```
+### 02 · Establish Baseline TCP Connectivity
 
-The results were reviewed to identify rules that allow or block network traffic.
-
-### 03 · Search for a Specific Rule
-
-Searched the firewall rules for a specific application or service.
-
-```powershell
-Get-NetFirewallRule |
-Where-Object DisplayName -Like "*File and Printer Sharing*" |
-Select-Object DisplayName,Enabled,Direction,Action
-```
-
-This demonstrated how to locate rules associated with a particular Windows networking function.
-
-### 04 · Review Rule Details
-
-Inspected additional information for a firewall rule.
-
-```powershell
-Get-NetFirewallRule |
-Where-Object DisplayName -Like "*File and Printer Sharing*" |
-Get-NetFirewallPortFilter
-```
-
-The rule configuration was reviewed to determine which network ports were associated with the rule.
-
-### 05 · Test Network Connectivity
-
-Used PowerShell to test TCP connectivity to a remote service.
+Tested HTTPS connectivity to Google over TCP port 443.
 
 ```powershell
 Test-NetConnection google.com -Port 443
 ```
 
-Reviewed the result to determine whether the TCP connection was successful.
+The connection succeeded:
 
-### 06 · Review Firewall Configuration
-
-Checked the overall firewall configuration again after the investigation.
-
-```powershell
-Get-NetFirewallProfile |
-Select-Object Name,Enabled,DefaultInboundAction,DefaultOutboundAction
+```text
+ComputerName       : google.com
+RemoteAddress      : 64.233.178.101
+RemotePort         : 443
+InterfaceAlias     : Ethernet0
+SourceAddress      : 192.168.125.130
+TcpTestSucceeded   : True
 ```
 
-Confirmed that the firewall remained enabled and that the configured default actions were unchanged.
+This established that TCP 443 connectivity was working before introducing the controlled firewall fault.
 
-## 💡 Troubleshooting Considerations
+📸 **Evidence:** `screenshots/firewall-connectivity-baseline.png`
 
-Common Windows Firewall issues include:
+### 03 · Create a Controlled Firewall Block Rule
 
-* Required traffic being blocked
-* Incorrect firewall profiles
-* Disabled firewall protection
-* Incorrect inbound rules
-* Incorrect outbound rules
-* Application connectivity failures
-* Network services being inaccessible
-* Rules configured for the wrong profile
-
-Useful troubleshooting commands include:
+Created a temporary outbound firewall rule targeting the resolved remote IP address and TCP port 443.
 
 ```powershell
-Get-NetFirewallProfile
+$TestIP = "64.233.178.101"
+
+New-NetFirewallRule `
+  -DisplayName "HelpDeskLab-Block-Test443" `
+  -Direction Outbound `
+  -Action Block `
+  -Protocol TCP `
+  -RemoteAddress $TestIP `
+  -RemotePort 443
 ```
+
+The rule was created successfully with:
+
+* Enabled: `True`
+* Direction: `Outbound`
+* Action: `Block`
+* Profile: `Any`
+* Status: `OK`
+
+📸 **Evidence:** `screenshots/firewall-controlled-block.png`
+
+### 04 · Test Connectivity During the Fault
+
+Retested TCP connectivity to the same remote IP and port.
 
 ```powershell
-Get-NetFirewallRule -Enabled True
 ```
-
-```powershell
-Test-NetConnection google.com -Port 443
-```
-
-```powershell
-Get-NetFirewallRule |
-Where-Object DisplayName -Like "*File and Printer Sharing*"
-```
-
-## 🔐 Security Notes
-
-* Avoid disabling Windows Firewall as a first troubleshooting step.
-* Review existing rules before creating or modifying firewall rules.
-* Use the principle of least privilege when configuring firewall access.
-* Avoid creating broad rules when a specific port, application, or profile can be used.
-* Do not publish sensitive internal network information in screenshots.
-* Review screenshots before committing them to GitHub.
-
-## 📸 Evidence
-
-Screenshots from the lab document:
-
-* Firewall profiles and their enabled state
-* Relevant firewall rule investigation
-* Firewall rule details
-* `Test-NetConnection` results
-* Final firewall configuration
-
-> Screenshots should not contain passwords, credentials, private network information, or other sensitive data.
-
-## 📝 What I Learned
-
-* How to review Windows Firewall profiles
-* How to investigate Windows Firewall rules using PowerShell
-* How firewall profiles affect network traffic
-* How to inspect firewall rule properties
-* How to test TCP connectivity with `Test-NetConnection`
-* How firewall configuration can affect application and network connectivity
-* Why firewall changes should be specific and minimally permissive
-* How to verify firewall configuration after troubleshooting
