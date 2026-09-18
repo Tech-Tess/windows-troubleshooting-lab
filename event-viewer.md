@@ -67,4 +67,213 @@ The event description stated:
 
 > The system has rebooted without cleanly shutting down first.
 
-Event ID 41 indicates that Windows
+Event ID 41 is logged when Windows detects that the previous shutdown was not completed cleanly.
+
+📸 **Evidence:** `screenshots/event-viewer-kernel-power-41.png`
+
+### 04 · Review Event Details
+
+The event properties were reviewed to examine the additional information recorded by Windows.
+
+Relevant event information included:
+
+```text
+Provider: Microsoft-Windows-Kernel-Power
+Event ID: 41
+Level: Critical
+Task: 63
+Channel: System
+Computer: Windows11VM
+EventRecordID: 1147
+```
+
+The event was recorded at:
+
+```text
+2026-09-17T12:58:15.5309028Z
+```
+
+The event confirmed that Windows had detected an unclean shutdown condition.
+
+However, Event ID 41 by itself does not identify the exact underlying cause. Additional event data was reviewed before drawing conclusions.
+
+### 05 · Cross-Check the Event with PowerShell
+
+PowerShell was used to retrieve the most recent Event ID 41 entries from the System log.
+
+```powershell
+Get-WinEvent -FilterHashtable @{
+    LogName = 'System'
+    Id = 41
+} -MaxEvents 5 |
+Format-List TimeCreated,ProviderName,Id,LevelDisplayName,Message
+```
+
+The command returned the Kernel-Power Event ID 41 entry.
+
+The event time was displayed in the local Windows time as:
+
+```text
+2026-09-17 8:58:15 AM
+```
+
+This independently confirmed the Event Viewer finding using PowerShell.
+
+📸 **Evidence:** `screenshots/event-viewer-powershell-event-41.png`
+
+### 06 · Review Detailed Event Data
+
+The event XML was inspected to review the individual EventData fields.
+
+```powershell
+$event = Get-WinEvent -FilterHashtable @{
+    LogName = 'System'
+    Id = 41
+} -MaxEvents 1
+
+[xml]$xml = $event.ToXml()
+
+$xml.Event.EventData.Data |
+Select-Object Name, '#text'
+```
+
+Relevant values included:
+
+```text
+BugcheckCode                  0
+BugcheckParameter1            0x0
+BugcheckParameter2            0x0
+BugcheckParameter3            0x0
+BugcheckParameter4            0x0
+SleepInProgress               0
+PowerButtonTimestamp          0
+BootAppStatus                 0
+Checkpoint                    0
+ConnectedStandbyInProgress    false
+WHEABootErrorCount            0
+LongPowerButtonPressDetected  false
+```
+
+These values were consistent with the controlled VM power-off that had been performed before restarting the system.
+
+In particular, `BugcheckCode` was `0`, `PowerButtonTimestamp` was `0`, and `WHEABootErrorCount` was `0`.
+
+📸 **Evidence:** `screenshots/event-viewer-powershell-event-data.png`
+
+### 07 · Interpret the Event
+
+The evidence was considered together rather than treating Event ID 41 as a diagnosis by itself.
+
+The VM had been intentionally powered off through VMware without a normal Windows shutdown. After restarting the VM:
+
+* Windows logged Kernel-Power Event ID 41.
+* Event Viewer identified the event as Critical.
+* PowerShell independently retrieved the same event.
+* The event data showed `BugcheckCode 0`.
+* `PowerButtonTimestamp` was `0`.
+* `WHEABootErrorCount` was `0`.
+
+The findings were therefore consistent with the controlled VMware power-off that created the test condition.
+
+Event ID 41 should not automatically be interpreted as proof of a hardware failure, power supply problem, or Windows crash. In a real troubleshooting case, additional evidence would be required to determine what caused the unexpected shutdown.
+
+## 🧠 Troubleshooting Analysis
+
+The investigation followed a simple evidence-based process:
+
+```text
+Create controlled unclean shutdown
+        ↓
+Restart Windows
+        ↓
+Review System log
+        ↓
+Identify Kernel-Power Event ID 41
+        ↓
+Review event details
+        ↓
+Retrieve event with PowerShell
+        ↓
+Inspect EventData
+        ↓
+Compare findings with known test condition
+        ↓
+Document the observed event and limitations
+```
+
+The key troubleshooting point was separating the **observed event** from the **underlying cause**.
+
+Event ID 41 confirmed that Windows detected an unclean shutdown. Because the shutdown condition was intentionally created through VMware, the event could be correlated with the known test condition.
+
+In a real incident, the same event would require further investigation rather than being treated as the root cause by itself.
+
+## 💡 Troubleshooting Considerations
+
+Useful Event Viewer troubleshooting steps include:
+
+* Identify the affected log
+* Check event severity
+* Review the event source
+* Record the Event ID
+* Check the event timestamp
+* Review the General and Details tabs
+* Look for related events before and after the event
+* Cross-check findings with PowerShell
+* Avoid assuming that an event ID alone identifies the root cause
+
+Useful PowerShell commands include:
+
+```powershell
+Get-WinEvent -FilterHashtable @{
+    LogName = 'System'
+    Id = 41
+} -MaxEvents 5
+```
+
+```powershell
+Get-WinEvent -LogName System -MaxEvents 20
+```
+
+```powershell
+$event = Get-WinEvent -FilterHashtable @{
+    LogName = 'System'
+    Id = 41
+} -MaxEvents 1
+
+[xml]$xml = $event.ToXml()
+
+$xml.Event.EventData.Data |
+Select-Object Name, '#text'
+```
+
+## 🔐 Security Notes
+
+* Review event logs before publishing screenshots.
+* Avoid publishing usernames, computer names, internal hostnames, or other unnecessary system information when they are not relevant.
+* Do not publish credentials or sensitive configuration information.
+* Use a controlled virtual machine when intentionally creating failure conditions.
+* Avoid intentionally disrupting production systems to reproduce an issue.
+* Document the test condition so that observed events are not misrepresented as real incidents.
+
+## 📸 Evidence
+
+Key screenshots from the lab:
+
+* `screenshots/event-viewer-kernel-power-41.png`
+* `screenshots/event-viewer-powershell-event-41.png`
+* `screenshots/event-viewer-powershell-event-data.png`
+
+> Screenshots should be reviewed before publication to remove credentials, sensitive information, and unnecessary system identifiers.
+
+## 📝 What I Learned
+
+* How to use Windows Event Viewer to investigate system events
+* How to navigate the Windows System event log
+* How to identify an event by source, severity, and Event ID
+* How to investigate Kernel-Power Event ID 41
+* How to retrieve Windows events using `Get-WinEvent`
+* How to inspect detailed event data through PowerShell
+* How to use event XML to review individual EventData fields
+* How to correlate an observed event with a known test condition
+* Why an Event ID should not automatically be treated as the root cause
+* How to document troubleshooting findings and their limitations accurately
