@@ -9,7 +9,7 @@ Practice reviewing Windows Firewall configuration, testing network connectivity,
 ## 🖥️ Environment
 
 * Windows 11 25H2
-* PowerShell
+* PowerShell 7
 * Windows Defender Firewall
 * VMware virtual machine
 * Administrator PowerShell session
@@ -56,12 +56,12 @@ Test-NetConnection google.com -Port 443
 The connection succeeded:
 
 ```text
-ComputerName       : google.com
-RemoteAddress      : 64.233.178.101
-RemotePort         : 443
-InterfaceAlias     : Ethernet0
-SourceAddress      : 192.168.125.130
-TcpTestSucceeded   : True
+ComputerName     : google.com
+RemoteAddress    : 64.233.178.101
+RemotePort       : 443
+InterfaceAlias   : Ethernet0
+SourceAddress    : 192.168.125.130
+TcpTestSucceeded : True
 ```
 
 This established that TCP 443 connectivity was working before introducing the controlled firewall fault.
@@ -109,9 +109,9 @@ PingSucceeded      : True
 TcpTestSucceeded   : False
 ```
 
-This demonstrated that the remote host remained reachable by ICMP while the TCP connection to port 443 failed.
+The remote host remained reachable by ICMP, but the TCP connection to port 443 failed.
 
-The result was consistent with the controlled outbound firewall rule.
+Because the test rule specifically blocked outbound TCP traffic to that IP and port, the result was consistent with the controlled firewall fault.
 
 📸 **Evidence:** `screenshots/firewall-blocked-connectivity.png`
 
@@ -148,7 +148,7 @@ LocalAddress  : Any
 RemoteAddress : 64.233.178.101
 ```
 
-The rule therefore applied to outbound traffic from the VM to the specified remote IP address.
+The rule applied to outbound traffic from the VM to the specified remote IP address.
 
 📸 **Evidence:** `screenshots/firewall-rule-investigation.png`
 
@@ -181,7 +181,7 @@ SourceAddress    : 192.168.125.130
 TcpTestSucceeded : True
 ```
 
-This verified that removing the blocking rule restored TCP connectivity.
+This confirmed that TCP connectivity was restored after removing the blocking rule.
 
 📸 **Evidence:** `screenshots/firewall-recovery-verification.png`
 
@@ -244,7 +244,7 @@ TCP 443 connection succeeds
 Verify final firewall configuration
 ```
 
-The controlled test demonstrated that firewall rules can affect specific network traffic without necessarily preventing all communication with a remote host.
+The test showed that a firewall rule can block specific network traffic without preventing all communication with the remote host.
 
 In this exercise, ICMP connectivity remained successful while the TCP connection to port 443 was blocked.
 
