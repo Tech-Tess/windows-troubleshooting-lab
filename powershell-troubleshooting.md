@@ -40,11 +40,11 @@ Reviewed the available commands, including:
 * `Set-Service`
 * `New-Service`
 
-This demonstrated how PowerShell can be used to discover available commands before troubleshooting.
+This provided a quick way to find available service-related commands before starting the investigation.
 
 ### 02 · Get Command Help
 
-Used PowerShell's built-in help system to investigate command syntax, parameters, descriptions, and examples.
+Used PowerShell's built-in help system to review command syntax, parameters, descriptions, and examples.
 
 ```powershell
 Get-Help Get-Service
@@ -58,11 +58,11 @@ Detailed examples were then reviewed with:
 Get-Help Get-Service -Examples
 ```
 
-The examples demonstrated different ways to retrieve and work with Windows service objects.
+The examples showed different ways to retrieve and work with Windows service objects.
 
 ### 03 · Filter Running Services
 
-Executed a service-filtering command to demonstrate PowerShell's pipeline and object filtering capabilities.
+Used the PowerShell pipeline to return services that were currently running.
 
 ```powershell
 Get-Service | Where-Object {$_.Status -eq "Running"}
@@ -70,17 +70,17 @@ Get-Service | Where-Object {$_.Status -eq "Running"}
 
 The command returned services whose `Status` property was `Running`.
 
-This demonstrated:
+The command uses:
 
-* `Get-Service` retrieving service objects
-* The pipeline operator `|`
-* `Where-Object` filtering objects
-* `$_.Status` accessing an object property
-* `-eq` performing an equality comparison
+* `Get-Service` to retrieve service objects
+* `|` to pass the objects through the pipeline
+* `Where-Object` to filter the results
+* `$_.Status` to access the service status
+* `-eq` to compare the status value
 
 ### 04 · Test an Invalid Command
 
-Intentionally entered an incorrectly spelled command to observe PowerShell error handling.
+Intentionally entered an incorrectly spelled command to observe the resulting PowerShell error.
 
 ```powershell
 Get-Servce
@@ -95,8 +95,6 @@ CategoryInfo          : ObjectNotFound
 FullyQualifiedErrorId : CommandNotFoundException
 ```
 
-The error was reviewed rather than ignored.
-
 ### 05 · Review PowerShell Errors
 
 Used the `$Error` automatic variable to review the most recent PowerShell error.
@@ -105,9 +103,9 @@ Used the `$Error` automatic variable to review the most recent PowerShell error.
 $Error[0]
 ```
 
-The output returned the previously generated `Get-Servce` error, including the `CommandNotFoundException`.
+The output returned the `Get-Servce` error, including the `CommandNotFoundException`.
 
-This demonstrated how PowerShell maintains an error history that can be inspected during troubleshooting.
+PowerShell stores recent errors in the `$Error` collection, which can be useful when investigating a failed command.
 
 ### 06 · Review System Information
 
@@ -126,7 +124,7 @@ WindowsProductName WindowsVersion OsBuildNumber
 Windows 10 Pro     2009           26200
 ```
 
-The product-name field and OS build information returned by PowerShell were recorded as observed during the lab.
+The values above are the output returned by PowerShell during the lab. The VM was configured as Windows 11 25H2, while the `WindowsProductName` field reported `Windows 10 Pro`.
 
 ### 07 · Verify Administrative Privileges
 
@@ -185,7 +183,7 @@ C:\SecureLab: Access is denied.
 Successfully processed 0 files; Failed processing 1 files
 ```
 
-The permission problem was then investigated from the Administrator session.
+The permission issue was then investigated from the Administrator session.
 
 ### 09 · Inspect and Remediate NTFS Permissions
 
@@ -224,7 +222,7 @@ The permission assignment was then verified by testing access from the `HelpDesk
 
 A test file was used to verify the permission change.
 
-The existing file initially inherited permissions for SYSTEM and Administrators only. Modify permission was therefore explicitly granted to `HelpDeskTest` on the test file:
+The existing `PowerShellTest.txt` file had inherited permissions for SYSTEM and Administrators only. Modify permission was therefore explicitly granted to `HelpDeskTest` on the file:
 
 ```powershell
 icacls "C:\SecureLab\PowerShellTest.txt" /grant "HelpDeskTest:(M)"
@@ -236,7 +234,7 @@ From the `HelpDeskTest` session, the file was successfully modified using:
 Add-Content "C:\SecureLab\PowerShellTest.txt" "PowerShell permission test"
 ```
 
-The file was then verified with:
+The file contents were then verified:
 
 ```powershell
 Get-Content "C:\SecureLab\PowerShellTest.txt"
@@ -260,7 +258,7 @@ Result:
 windows11vm\helpdesktest
 ```
 
-This confirmed that the intended test account could access and modify the test file after the permission remediation.
+This confirmed that the test account could modify the file after the permission remediation.
 
 ### 11 · Verify Windows Service Status
 
@@ -278,7 +276,7 @@ Name     Status  StartType
 Spooler  Running Automatic
 ```
 
-This confirmed that the Print Spooler service was running and configured for automatic startup.
+The Print Spooler service was running and configured for automatic startup.
 
 ## 💡 Troubleshooting Considerations
 
